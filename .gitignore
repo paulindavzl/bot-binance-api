@@ -1,0 +1,12 @@
+.dockerignore
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.env
+*.sqlite
+.DS_Store
+.idea/
+.vscode/
+*.log
+*.tmp

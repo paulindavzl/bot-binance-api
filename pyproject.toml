@@ -1,0 +1,19 @@
+[tool.poetry]
+name = "bot"
+version = "0.1.0"
+description = "API que conecta uma interface a um bot que realiza operações na Binance via API_KEY e API_SECRET"
+authors = ["paulindavzl <paulochz01@gmail.com>"]
+license = "MIT"
+readme = "README.md"
+packages = [
+    {include = "src"},
+]
+
+[tool.poetry.dependencies]
+python = "^3.13"
+flask = "^3.1.0"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

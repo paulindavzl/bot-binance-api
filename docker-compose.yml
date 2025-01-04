@@ -1,0 +1,12 @@
+version: '3.8'
+
+services:
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "5000:5000" # Mapeia a porta 5000 do host para o contêiner
+    volumes:
+      - ./src:/app/src  # Mapeia o diretório de código-fonte
+    command: poetry run flask run --host=0.0.0.0 --port=5000
