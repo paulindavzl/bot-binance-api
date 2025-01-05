@@ -9,9 +9,20 @@ packages = [
     {include = "src"},
 ]
 
+
+[tool.poetry.scripts]
+tests = "tests:run"
+app = "app:run"
+configure = "configure:run"
+
+
 [tool.poetry.dependencies]
 python = "^3.13"
 flask = "^3.1.0"
+my-orm = {path = "./libs/my-orm"}
+pytest = "^8.3.4"
+sh = "^2.1.0"
+python-dotenv = "^1.0.1"
 
 
 [build-system]

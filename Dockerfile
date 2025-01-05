@@ -20,6 +20,9 @@ WORKDIR /src
 # Copie os arquivos de configuração do Poetry para o contêiner
 COPY pyproject.toml poetry.lock* /src/
 
+# Copie a pasta libs para dentro do diretório src
+COPY libs /src/libs
+
 # Instale as dependências do projeto
 RUN poetry install --no-interaction --no-dev
 
@@ -30,4 +33,4 @@ COPY . /src/
 EXPOSE 5000
 
 # Defina o comando para iniciar a aplicação Flask
-CMD ["poetry", "run", "flask", "run", "--host=0.0.0.0", "--port=5000"]
+CMD ["poetry", "run", "app"]
