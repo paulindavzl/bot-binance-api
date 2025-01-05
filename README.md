@@ -4,7 +4,7 @@ API/bot que conecta e realiza operações em criptomoedas por meio de APIs da [B
 
 ## Dependências
 
-<a href="https://www.docker.com/"><img src="https://github.com/user-attachments/assets/94c615fb-79d1-46b3-848e-667f9e312716" alt="Docker" width="130" height="130" title="usa Docker para manter a consistência do projeto em todas as máquinas"></a>
+<a href="https://www.docker.com/" target="_blank"><img src="https://github.com/user-attachments/assets/94c615fb-79d1-46b3-848e-667f9e312716" alt="Docker" width="130" height="130" title="usa Docker para manter a consistência do projeto em todas as máquinas"></a>
 <a href="https://python-poetry.org/docs/" target="_blank"><img src="https://github.com/user-attachments/assets/5be6ef37-662a-4319-8a7f-f0ed1b15ba37" alt="Poetry" width="130" height="130" title="usa Poetry para gerenciar dependências"></a>
 <a href="https://flask.palletsprojects.com/en/stable/installation/" target="_blank"><img src="https://github.com/user-attachments/assets/034ef091-fb20-4193-8945-71dd748b053c" alt="Flask" width="130" height="130" title="usa Flask para criar a API"></a>
 <a href="https://www.mysql.com/downloads/" target="_blank"><img src="https://github.com/user-attachments/assets/629d1c03-6807-48d5-9fa5-6e12b3446e1e" alt="MySQL" width="130" height="130" title="usa MySQL como SGDB"></a>
