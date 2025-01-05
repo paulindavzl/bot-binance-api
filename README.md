@@ -11,6 +11,8 @@ API/bot que conecta e realiza operações em criptomoedas por meio de APIs da [B
 
 O **Flask** é uma dependência que é instalada automaticamente, mas caso você não tenha o **Poetry**, **Docker** ou **MySQL** (caso execute localmente), veja como instalá-los clicando em seus logos acima.
 
+Este projeto também utiliza, para se conectar com banco de dados, uma ORM própria! Saíba mais em [MyORM](https://github.com/paulindavzl/my-orm/)
+
 ## Instalação
 
 **OBS: tenha o _Docker_, _Poetry_ e o _MySQL_ (caso execute localmente) instalados.**
