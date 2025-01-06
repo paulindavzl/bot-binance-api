@@ -20,6 +20,7 @@ def env_logger():
     if not '_logger_initialized' in globals():
         _logger_initialized = False
     
+    os.makedirs('./logs/', exist_ok=True)
     logger = logging.getLogger('env')
 
     if not _logger_initialized:
