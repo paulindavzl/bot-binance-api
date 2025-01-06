@@ -10,4 +10,7 @@ __pycache__/
 .vscode/
 *.log
 *.tmp
-.pytest_cache
+.pytest_cache/
+.key
+.enc
+logs/

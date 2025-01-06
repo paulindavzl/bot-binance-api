@@ -1,29 +1,6 @@
 import os
 import json
-from src import DB_HOST, DB_NAME, DB_PASSWORD, DB_PORT, DB_USER
-from src.config import PATH_CONFIG, DEFAULT_CONFIG_JSON
-
-
-# carrega o arquivo de configuração
-def load_config_json() -> dict:
-    json_path = f'{PATH_CONFIG}/config.json'
-
-    # garante que config.json exista
-    if not os.path.exists(json_path):
-        with open(json_path, 'w') as file:
-            file.write(DEFAULT_CONFIG_JSON)
-
-    # carrega as configurações
-    json_config = {'is_configured': 0}
-    with open(json_path, 'r') as file:
-        try:
-            json_config = json.load(file)
-        except json.JSONDecodeError as e:
-            print(f'Houve um erro ao abrir o arquivo de confuração: {e}')
-        except Exception as e:
-            print(f'Houve um erro desconhecido: {e}')
-
-    return json_config
+from src import DB_HOST, DB_NAME, DB_PASSWORD, DB_PORT, DB_USER, DB_IS_CONFIGURED, API_IS_CONFIGURED
 
 
 # limpa o terminal
@@ -36,18 +13,23 @@ def clear(info:[str]=None):
 
 # esconde a senha
 def hide_password(password) -> str:
-    n_pass = password[0]+'*'*(len(password)-2)+password[-1]
+    if len(password) >= 4:
+        n_pass = password[0]+'*'*(len(password)-2)+password[-1]
+    elif len(password) > 0:
+        n_pass = '*'*len(password)
+    else:
+        n_pass = password
     
     return n_pass
 
 
 # inicia a configuração do banco de dados
-def start_config_db(status, commands):
+def start_config_db(commands):
     config_db = f'''{'-'*30}
 Você está realizando a configuração do seu banco de dados MySQL. ([/pass] para passar, [/restart] para reiniciar, [/cancel] para cancelar configuração)
-{'Obs: as configurações já foram feitas antes!' if status == 0 else ''}
 {'-'*30}
 '''
+    clear(config_db)
 
     # obtém o user
     response = input(f'Informe o usuário (user). Atual: {DB_USER}\n>> ')
@@ -56,7 +38,7 @@ Você está realizando a configuração do seu banco de dados MySQL. ([/pass] pa
         if response == '/pass':
             response = DB_USER
         else:
-            return exec_command(response, start_config_db, status, commands)
+            return exec_command(response, start_config_db, commands)
 
     db_user = response
     clear(config_db)
@@ -68,7 +50,7 @@ Você está realizando a configuração do seu banco de dados MySQL. ([/pass] pa
         if response == '/pass':
             response = DB_PASSWORD
         else:
-            return exec_command(response, start_config_db, status, commands)
+            return exec_command(response, start_config_db, commands)
 
     db_password = response
     clear(config_db)
@@ -80,7 +62,7 @@ Você está realizando a configuração do seu banco de dados MySQL. ([/pass] pa
         if response == '/pass':
             response = DB_HOST
         else:
-            return exec_command(response, start_config_db, status, commands)
+            return exec_command(response, start_config_db, commands)
 
     db_host = response
     clear(config_db)
@@ -92,7 +74,7 @@ Você está realizando a configuração do seu banco de dados MySQL. ([/pass] pa
         if response == '/pass':
             response = DB_NAME
         else:
-            return exec_command(response, start_config_db, status, commands)
+            return exec_command(response, start_config_db, commands)
 
     db_name = response
     clear(config_db)
@@ -104,7 +86,7 @@ Você está realizando a configuração do seu banco de dados MySQL. ([/pass] pa
         if response == '/pass':
             response = DB_PORT
         else:
-            return exec_command(response, start_config_db, status, commands)
+            return exec_command(response, start_config_db, commands)
 
     db_port = response
     clear()
@@ -129,18 +111,21 @@ Aperte ENTER para continuar ou digite: [/cancel] para cancelar, [/restart] para 
 
     
 # executa o comando que o usuário selecionou
-def exec_command(command, funct, status, commands):
+def exec_command(command, funct, commands):
     if command == '/restart':
-        return funct(status, commands)
+        return funct(commands)
     
 
 # inicia a configuração
 def start():
-    config = load_config_json()
-    status = config.get('is_configured')
     commands = ['/pass', '/restart', '/cancel']
     
-    config_db = start_config_db(status, commands)
+    if DB_IS_CONFIGURED:
+        response = input('O banco de dados já foi configurado. Deseja realizar a configuração novamente? [ENTER] para continuar | [/pass ou /cancel] para cancelar reconfiguração\n>>')
+        if response in commands:
+            config_db = start_config_db(commands)
+    else:
+        config_db = start_config_db(commands)
 
 
 
