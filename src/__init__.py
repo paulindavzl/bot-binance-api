@@ -1,6 +1,7 @@
 import os
 import time
 import logging
+import traceback
 from logging.handlers import TimedRotatingFileHandler
 from cryptography.fernet import Fernet
 from dotenv import load_dotenv, set_key
@@ -10,27 +11,24 @@ TIME_CHANGE_KEY = 30 # em minutos
 TIME_CHANGE_BACKUP_KEY = 10 # em minutos
 
 
-# retorna o logger para salvar logs
-import logging
-
-# retorna o logger de core
+# retorna o logger de env
 def env_logger():
-    global _logger_initialized
+    global _env_logger_initialized
 
-    if not '_logger_initialized' in globals():
-        _logger_initialized = False
+    if not '_env_logger_initialized' in globals():
+        _env_logger_initialized = False
     
     os.makedirs('./logs/', exist_ok=True)
     logger = logging.getLogger('env')
 
-    if not _logger_initialized:
-        handler = TimedRotatingFileHandler('./logs/env.log', when='midnight', interval=7, backupCount=5)
+    if not _env_logger_initialized:
+        handler = TimedRotatingFileHandler('./logs/env.log', when='midnight', interval=1, backupCount=5)
         formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
         handler.setFormatter(formatter)
         logger.addHandler(handler)
         logger.setLevel(logging.INFO)
 
-        _logger_initialized = True
+        _env_logger_initialized = True
 
     return logger
 
@@ -60,7 +58,7 @@ def set_default_env(first: bool=False):
     if first:
         env_logger().info('Data in .env has been set to default')
     else: # se não é a primeira vez, pode ser um problema
-        env_logger().warning('Data in .env has been set to default')
+        env_logger().warning('Data in .env has been set as default again')
 
     
 # altera a chave
@@ -105,6 +103,9 @@ def encode_env():
     key = get_key() # obtém a chave
     content = ''
 
+    if os.path.exists('.enc'):
+        decode_env()
+
     if not os.path.exists('.env'):
         set_default_env()
 
@@ -142,10 +143,11 @@ def decode_env():
     except InvalidToken:
         backup_key = get_key(True)
         try:
-            fernet = Fernet(key)
+            fernet = Fernet(backup_key)
             content_decoded = fernet.decrypt(content)
         except InvalidToken:
-            manager
+            env_logger().critical(f'There was an error trying to decrypt the environment variables.')
+            raise InvalidToken('There was an error trying to decrypt the environment variables.')
 
     # salva o arquivo descriptografado
     with open('.env', 'wb') as file:
@@ -161,7 +163,7 @@ def set_env(**envs):
 
     for key in envs:
         set_key('.env', key, str(envs[key]))
-        env_logger().info(f'The environment variable {key} has been assigned the value {envs[key]}')
+        env_logger().info(f'The environment variable "{key}" has been assigned the value "{envs[key]}"')
 
     encode_env()
 
@@ -181,13 +183,12 @@ def load_file_env(reload: bool=False):
         return
         
     # garante que .env exista
-    if not os.path.exists('.env') and not os.path.exists('.enc'):
+    if not os.path.exists('.enc') and not os.path.exists('.env'):
         set_default_env(True)
+        encode_env()
     
-
     decode_env()
     load_dotenv()
-
 
     # dados para conexão com servidor MySQL
     DB_USER = os.getenv('DB_USER')
@@ -234,4 +235,7 @@ def load_file_env(reload: bool=False):
     
 
 # realiza a leitura inicial de .env
-load_file_env()
+try:
+    load_file_env()
+except Exception as e:
+    env_logger().critical(f'Unexpected error: {traceback.format_exc()}')
