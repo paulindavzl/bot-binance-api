@@ -1,7 +1,7 @@
 from types import FunctionType
 from src import  DB_HOST, DB_NAME, DB_PASSWORD, DB_PORT, DB_USER
 from src.config import config_logger
-from src.core.utis import hide_data, clear, gen_input, exec_command
+from src.core.utils import hide_data, clear, gen_input
 
 
 # inicia a configuração do banco de dados

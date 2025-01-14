@@ -1,3 +1,0 @@
-[submodule "libs/my-orm"]
-	path = libs/my-orm
-	url = git@github.com:paulindavzl/my-orm.git

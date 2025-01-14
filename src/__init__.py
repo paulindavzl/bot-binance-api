@@ -7,36 +7,49 @@ from cryptography.fernet import Fernet
 from dotenv import load_dotenv, set_key
 
 
-TIME_CHANGE_KEY = 30 # em minutos
-TIME_CHANGE_BACKUP_KEY = 10 # em minutos
+# altera o tempo de troca das chaves
+def set_time_change_key(tck: [int, float]=60, tcbk: [int, float]=10, reset: bool=False):
+    global _time_change_key_defined
+
+    if not '_time_change_key_defined' in globals():
+        _time_change_key_defined = False
+
+    if _time_change_key_defined or not reset:
+        return
+
+    TIME_CHANGE_KEY = float(tck) * 60
+    TIME_CHANGE_BACKUP_KEY = float(tcbk) * 60
+
+    env_logger().info(f'The decryption key exchange time has been set to: "{TIME_CHANGE_KEY}" seconds ("{tck}" minutes)')
+    env_logger().info(f'Decryption key backup exchange time has been set to: "{TIME_CHANGE_BACKUP_KEY}" seconds ("{tcbk}" minutes)')
+
+    _time_change_key_defined = True
 
 
 # retorna o logger de env
 def env_logger():
-    global _env_logger_initialized
-
-    if not '_env_logger_initialized' in globals():
-        _env_logger_initialized = False
-    
     os.makedirs('./logs/', exist_ok=True)
     logger = logging.getLogger('env')
 
-    if not _env_logger_initialized:
+    if not logger.hasHandlers():
         handler = TimedRotatingFileHandler('./logs/env.log', when='midnight', interval=1, backupCount=5)
         formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
         handler.setFormatter(formatter)
         logger.addHandler(handler)
         logger.setLevel(logging.INFO)
 
-        _env_logger_initialized = True
-
     return logger
-
 
 
 # salva .env com os dados padrões
 def set_default_env(first: bool=False):
+    if not os.path.exists('.env'):
+        with open('.env', 'w'):
+            pass
+
     set_env(
+            reload=False,
+
             # define informações de conexão com banco de dados
             DB_USER='root',
             DB_PASSWORD='NULL',
@@ -44,12 +57,15 @@ def set_default_env(first: bool=False):
             DB_HOST='localhost',
             DB_PORT=3306,
 
+            # define o tempo de  troca de chaves
+            TIME_CHANGE_KEY = 60 * 60,
+            TIME_CHANGE_BACKUP_KEY = 10 * 60,
+
             # define informações de conexão com a Binance (indefinidas por padrão)
-            API_KEY='NULL',
+            ACCESS_KEY='NULL',
             SECRET_KEY='NULL',
 
             # define informações de configurações gerais
-            TEST_MODE=0,
             DB_IS_CONFIGURED=0,
             API_IS_CONFIGURED=0
         )
@@ -69,7 +85,7 @@ def change_key():
     get_key() # chama get_key somente para gerar uma nova chave
     env_logger().info('The key in .key has been changed')
 
-    time.sleep(TIME_CHANGE_BACKUP_KEY)
+    time.sleep(float(TIME_CHANGE_BACKUP_KEY))
 
     if os.path.exists('backup.key'):
         os.remove('backup.key')
@@ -79,16 +95,26 @@ def change_key():
 
 
 # obtém a chave de decodificação
-def get_key(backup: bool=False) -> str:
+def get_key(backup: bool=False, generate_backup: bool=True) -> str:
     key = ''
     prefix = 'backup' if backup else ''
     file_key = f'{prefix}.key'
 
     # garante que .key exista
     if not os.path.exists(file_key):
-        key = Fernet.generate_key()
+        if backup:
+            if not os.path.exists('.key'):
+                get_key(generate_backup=False)
+            with open('.key', 'rb') as file:
+                key = file.read()
+        else:
+            key = Fernet.generate_key()
+
         with open(file_key, 'wb') as file:
             file.write(key)
+        
+        if generate_backup and not backup:
+            get_key(True)
 
         env_logger().info(f'The {prefix}.key file has been created') # carrega um log
     
@@ -128,11 +154,10 @@ def decode_env():
     content = ''
     key = get_key()
 
-    if not os.path.exists('.enc'):
-        fernet = Fernet(key)
-        content_encoded = fernet.encrypt(content.encode())
-        with open('.enc', 'wb') as file:
-            file.write(content_encoded)
+    if not os.path.exists('.enc') and not os.path.exists('.env'):
+        set_default_env()
+    elif os.path.exists('.env'):
+        return
 
     with open('.enc', 'rb') as file:
         content = file.read()
@@ -157,13 +182,18 @@ def decode_env():
 
 
 # define ou redefine o valor de uma variável de ambiente
-def set_env(**envs):
+def set_env(reload: bool=True, **envs):
     if os.path.exists('.enc'):
         decode_env()
 
     for key in envs:
-        set_key('.env', key, str(envs[key]))
-        env_logger().info(f'The environment variable "{key}" has been assigned the value "{envs[key]}"')
+        if os.getenv(key) != envs[key]:
+            set_key('.env', key, str(envs[key]))
+            env_logger().info(f'The environment variable "{key}" has been assigned the value "{envs[key]}"')
+    
+    # recarrega as variáveis de ambiente
+    if reload:
+        load_file_env(True)
 
     encode_env()
 
@@ -172,7 +202,8 @@ def set_env(**envs):
 def load_file_env(reload: bool=False):
     global _initialized
     global DB_USER, DB_PASSWORD, DB_HOST, DB_NAME, DB_PORT
-    global API_KEY, SECRET_KEY, TEST_MODE, DB_IS_CONFIGURED, API_IS_CONFIGURED
+    global TIME_CHANGE_KEY, TIME_CHANGE_BACKUP_KEY
+    global ACCESS_KEY, SECRET_KEY, DB_IS_CONFIGURED, API_IS_CONFIGURED
 
     # caso _initialized não esteja definido
     if not '_initialized' in globals():
@@ -197,25 +228,38 @@ def load_file_env(reload: bool=False):
     DB_NAME = os.getenv('DB_NAME')
     DB_PORT = int(os.getenv('DB_PORT', 3306))
 
+    # tempo de troca de chaves
+    TIME_CHANGE_KEY = os.getenv('TIME_CHANGE_KEY')
+    TIME_CHANGE_BACKUP_KEY = os.getenv('TIME_CHANGE_BACKUP_KEY')
+
     # dados para conexão com Binance
-    API_KEY = os.getenv('API_KEY')
+    ACCESS_KEY = os.getenv('ACCESS_KEY')
     SECRET_KEY = os.getenv('SECRET_KEY')
 
     # garante que existe as informações de conexão com o banco de dados
-    if not all([DB_HOST, DB_NAME, DB_PORT, DB_USER, DB_PASSWORD]):
-        set_env(DB_IS_CONFIGURED=0) # para facilitar a configuração
-        env_logger().critical(f'Missing essential environment variables')
-        raise ValueError('Faltam variáveis de ambiente essenciais. Refaça a configuração da API com "poetry run configure"')
+    db_variables = {'DB_HOST':DB_HOST, 'DB_NAME':DB_NAME, 'DB_PORT':DB_PORT, 'DB_USER':DB_USER, 'DB_PASSWORD':DB_PASSWORD}
+    if not all([DB_HOST, DB_NAME, DB_PASSWORD, DB_PORT, DB_PORT]):
+        missing = []
+        for i in db_variables:
+            if db_variables[i] is None:
+                missing.append(i)
+        set_env(DB_IS_CONFIGURED=0, reload=False) # para facilitar a configuração
+        env_logger().critical(f'Missing essential environment variables: {missing}')
+        raise ValueError('Essential environment variables are missing. Redo the API configuration with "poetry run configure"')
 
     # garante que existe as chaves de API para conexão com Binance
-    if not all([API_KEY, SECRET_KEY]):
-        set_env(API_IS_CONFIGURED=0) # para facilitar a configuração
-        env_logger().critical(f'Missing essential environment variables')
-        raise ValueError('Faltam variáveis de ambiente essenciais. Refaça a configuração da API com "poetry run configure"')
+    api_variables = {'ACESS_KEY': ACCESS_KEY, 'SECRET_KEY': SECRET_KEY}
+    if not all([ACCESS_KEY, SECRET_KEY]):
+        missing = []
+        for i in api_variables:
+            if api_variables[i] is None:
+                missing.append(i)
+        set_env(API_IS_CONFIGURED=0, reload=False) # para facilitar a configuração
+        env_logger().critical(f'Missing essential environment variables: {missing}')
+        raise ValueError('Essential environment variables are missing. Redo the API configuration with "poetry run configure"')
 
-
-    if API_KEY == 'NULL':
-        API_KEY = ''
+    if ACCESS_KEY == 'NULL':
+        ACCESS_KEY = ''
 
     if SECRET_KEY == 'NULL':
         SECRET_KEY = ''
@@ -225,7 +269,6 @@ def load_file_env(reload: bool=False):
 
 
     # dados de configurações gerais
-    TEST_MODE = os.getenv('TEST_MODE') == '1'
     DB_IS_CONFIGURED = os.getenv('DB_IS_CONFIGURED') == '1'
     API_IS_CONFIGURED = os.getenv('API_IS_CONFIGURED') == '1'
 
@@ -236,6 +279,8 @@ def load_file_env(reload: bool=False):
 
 # realiza a leitura inicial de .env
 try:
+    set_time_change_key()
     load_file_env()
 except Exception as e:
     env_logger().critical(f'Unexpected error: {traceback.format_exc()}')
+    raise e
