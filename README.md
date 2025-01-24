@@ -11,8 +11,6 @@ API/bot que conecta e realiza operações em criptomoedas por meio de APIs da [B
 
 O **Flask** é uma dependência que é instalada automaticamente, mas caso você não tenha o **Poetry**, **Docker** ou **MySQL** (caso execute localmente), veja como instalá-los clicando em seus logos acima.
 
-Este projeto também utiliza, para se conectar com banco de dados, uma ORM própria! Saiba mais em [MyORM](https://github.com/paulindavzl/my-orm/)
-
 ## Instalação
 
 **OBS: tenha o _Docker_, _Poetry_ e o _MySQL_ (caso execute localmente) instalados.**
@@ -23,7 +21,7 @@ Este projeto também utiliza, para se conectar com banco de dados, uma ORM próp
 git clone git@github.com:paulindavzl/bot-binance-api.git
 ```
 
-### Instale as dependências 
+### Instale as dependências
 
 ```bash
 poetry install
@@ -43,7 +41,7 @@ docker-compose build
 
 ### Execute os testes
 
-É recomendado que você execute os testes antes de prosseguir para garantir que está tudo funcionando e evitar problemas:
+É recomendado que você execute os testes antes de prosseguir para garantir que está tudo funcionando e evitar problemas (executar testes fora de um contêiner pode resultar em exclusão de arquivos importantes):
 
 ```bash
 docker-compose run tests

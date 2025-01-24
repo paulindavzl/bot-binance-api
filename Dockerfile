@@ -1,7 +1,7 @@
 # Use uma imagem base com Python
 FROM python:3.13-slim
 
-# Instale dependências necessárias
+# Instala dependências necessárias
 RUN apt-get update && apt-get install -y \
     curl \
     build-essential \
@@ -10,26 +10,26 @@ RUN apt-get update && apt-get install -y \
     python3-dev \
     && rm -rf /var/lib/apt/lists/*
 
-# Instale o Poetry
-RUN curl -sSL https://install.python-poetry.org | python3 - 
+# Instala o Poetry
+RUN curl -sSL https://install.python-poetry.org | python3 - && \
+    export PATH="/root/.local/bin:$PATH" && \
+    poetry --version
 ENV PATH="/root/.local/bin:$PATH"
 
-# Defina o diretório de trabalho como /src
-WORKDIR /src
+# Define o diretório de trabalho como /app
+WORKDIR /app
 
-# Copie os arquivos de configuração do Poetry para o contêiner
-COPY pyproject.toml poetry.lock* /src/
+# Copia os arquivos de configuração do Poetry para o contêiner
+COPY pyproject.toml poetry.lock* README.md app.py configure.py tests.py /app/
 
-# Copie a pasta libs para dentro do diretório src
-COPY libs /src/libs
+# Copia o restante do código para o contêiner
+COPY src/ /app/src/
+COPY tests/ /app/tests/
 
-# Instale as dependências do projeto
-RUN poetry install --no-interaction --no-dev
+# Instala as dependências do projeto
+RUN poetry install --no-interaction
 
-# Copie o restante do código para o contêiner
-COPY . /src/
-
-# Exponha a porta usada pelo Flask (ajuste conforme necessário)
+# Expõe a porta usada pelo Flask
 EXPOSE 5000
 
 # Defina o comando para iniciar a aplicação Flask

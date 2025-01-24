@@ -21,22 +21,26 @@ def clear(info:[str]=None):
         print(info)
 
     
-# gera o input e analisa
-def gen_input(msg: str, data, commands: list, config: str, funct, hide: bool=False):
-    response = input(f'{msg}. Atual: {hide_data(data) if hide else data}\n>> ')
-    if response in commands:
-        if response == '/pass':
-            response = data
-            return response
-        return exec_command(response, funct, name=config)
-    
-    return response
+# altera a cor no terminal
+class Colorize:
+
+    def __init__(self, default: str='\033[0m'):
+        self.default = default
 
 
-# executa o comando que o usuário selecionou
-def exec_command(command, funct, name):
-    if command == '/restart':
-        config_logger().info(f'{name} configuration has been reset')
-        return funct
-    config_logger().info(f'{name} configuration has been canceled')
-    return 
+    def colors(self, color: str) -> str:
+        match color:
+            case 'y': return '\033[33m' # amarelo
+            case 'g': return '\033[32m' # verde
+            case 'w': return '\033[37m' # branco
+            case 'r': return '\033[31m' # vermelho
+            case _: return self.default
+
+
+    def colorize(self, msg: str, color: str, default: str=None) -> str:
+        message = f'{self.colors(color)}{msg}{self.default if not default else self.colors(default)}'
+        return message
+
+
+def wait(env, langs):
+    if input(langs(env)[env.LANG]['ENTER_TO_CONTINUE']) == 'exit': clear(); exit()

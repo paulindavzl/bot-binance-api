@@ -14,7 +14,6 @@ packages = [
 tests = "tests:run"
 app = "app:run"
 configure = "configure:run"
-restart_system = "restart_system:run"
 
 
 [tool.poetry.dependencies]
