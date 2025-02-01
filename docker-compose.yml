@@ -1,3 +1,6 @@
+volumes:
+  data:
+  logs:
 
 services:
   app:
@@ -8,13 +11,21 @@ services:
       - "5000:5000" # Mapeia a porta 5000 do host para o contêiner
     volumes:
       - ./src:/app/src  # Mapeia o diretório de código-fonte
-      - ./tests:/app/tests  # Mapeia o diretório de testes
+      - data:/app/data
+      - logs:/app/logs
     command: poetry run app
   tests:
     build: .
     command: poetry run tests
     volumes:
       - ./src:/app/src  # Mapeia o diretório de código-fonte
-      - ./tests:/app/tests  # Mapeia o diretório de testes
+      - ./test_data:/app/src
     depends_on:
       - app  # Garante que o serviço 'app' esteja pronto antes de executar os testes
+  configure:
+    build: .
+    command: poetry run configure  # Adicione o comando necessário para a configuração
+    volumes:
+      - ./src:/app/src  # Mapeia o diretório de código-fonte
+      - data:/app/data
+      - logs:/app/logs

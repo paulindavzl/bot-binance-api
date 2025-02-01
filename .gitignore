@@ -12,5 +12,7 @@ __pycache__/
 *.tmp
 .pytest_cache/
 .key
+*.key
 .enc
 logs/
+data/

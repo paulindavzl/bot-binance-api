@@ -7,13 +7,20 @@ from cryptography.fernet import Fernet, InvalidToken
 from dotenv import load_dotenv, set_key
 
 
+PATH_LOGS = './logs'
+PATH_ENV = './data/.env'
+PATH_ENC = './data/.enc'
+PATH_KEY = './data/.key'
+PATH_BACKUP = './data/backup.key'
+
+
 # retorna o logger de env
 def env_logger():
-    os.makedirs('./logs/', exist_ok=True)
+    os.makedirs(PATH_LOGS, exist_ok=True)
     logger = logging.getLogger('env')
 
     if not logger.hasHandlers():
-        handler = TimedRotatingFileHandler('./logs/env.log', when='midnight', interval=1, backupCount=5)
+        handler = TimedRotatingFileHandler(f'{PATH_LOGS}/env.log', when='midnight', interval=1, backupCount=5)
         formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
         handler.setFormatter(formatter)
         logger.addHandler(handler)
@@ -24,10 +31,10 @@ def env_logger():
 
 # salva .env com os dados padrões
 def set_default_env(first: bool=False):
-    if os.path.exists('.enc'):
+    if os.path.exists(PATH_ENC):
         decode_env()
 
-    with open('.env', 'w') as file:
+    with open(PATH_ENV, 'w') as file:
         file.write('')
 
     set_env(
@@ -38,6 +45,7 @@ def set_default_env(first: bool=False):
             ADM='paulindavzl',
             GITHUB='https://github.com/paulindavzl',
             LANG='pt',
+            DEBUG=True,
 
             # define informações de conexão com banco de dados
             DB_USER='root',
@@ -68,16 +76,16 @@ def set_default_env(first: bool=False):
     
 # altera a chave
 def change_key():
-    if os.path.exists('.key'):
-        os.remove('.key')
+    if os.path.exists(PATH_KEY):
+        os.remove(PATH_KEY)
     
     get_key() # chama get_key somente para gerar uma nova chave
     env_logger().info('The key in .key has been changed')
 
     time.sleep(float(TIME_CHANGE_BACKUP_KEY)) # espera o tempo definido para trocar o backup da chave
 
-    if os.path.exists('backup.key'):
-        os.remove('backup.key')
+    if os.path.exists(PATH_BACKUP):
+        os.remove(PATH_BACKUP)
     
     get_key(True)
     env_logger().info('The key in backup.key has been changed')
@@ -86,15 +94,14 @@ def change_key():
 # obtém a chave de decodificação
 def get_key(backup: bool=False, generate_backup: bool=True) -> str:
     key = ''
-    prefix = 'backup' if backup else ''
-    file_key = f'{prefix}.key'
+    file_key = PATH_BACKUP if backup else PATH_KEY
 
     # garante que .key exista
     if not os.path.exists(file_key):
         if backup:
-            if not os.path.exists('.key'):
+            if not os.path.exists(PATH_KEY):
                 get_key(generate_backup=False)
-            with open('.key', 'rb') as file:
+            with open(PATH_KEY, 'rb') as file:
                 key = file.read()
         else:
             key = Fernet.generate_key()
@@ -105,7 +112,7 @@ def get_key(backup: bool=False, generate_backup: bool=True) -> str:
         if generate_backup and not backup:
             get_key(True)
 
-        env_logger().info(f'The {prefix}.key file has been created') # carrega um log
+        env_logger().info(f'The {'backup' if backup else ''}.key file has been created') # carrega um log
     
     with open(file_key, 'rb') as file:
         key = file.read()
@@ -118,13 +125,13 @@ def encode_env():
     key = get_key() # obtém a chave
     content = ''
 
-    if os.path.exists('.enc'):
+    if os.path.exists(PATH_ENC):
         return
 
-    if not os.path.exists('.env'):
+    if not os.path.exists(PATH_ENV):
         set_default_env()
 
-    with open('.env', 'r') as file:
+    with open(PATH_ENV, 'r') as file:
         content = file.read()
 
     # instancia a classe Fernet
@@ -132,10 +139,10 @@ def encode_env():
     content_encoded = fernet.encrypt(content.encode())
 
     # salva o arquivo criptografado
-    with open('.enc', 'wb') as file:
+    with open(PATH_ENC, 'wb') as file:
         file.write(content_encoded)
 
-    os.remove('.env') # apaga o conteúdo descriptografado
+    os.remove(PATH_ENV) # apaga o conteúdo descriptografado
 
 
 # decodifica o arquivo .enc
@@ -143,13 +150,13 @@ def decode_env():
     content = ''
     key = get_key()
 
-    if os.path.exists('.env'):
+    if os.path.exists(PATH_ENV):
         return 
 
-    elif not os.path.exists('.enc'):
+    elif not os.path.exists(PATH_ENC):
         set_default_env()
 
-    with open('.enc', 'rb') as file:
+    with open(PATH_ENC, 'rb') as file:
         content = file.read()
         
     try:
@@ -165,15 +172,15 @@ def decode_env():
             raise InvalidToken('There was an error trying to decrypt the environment variables.')
 
     # salva o arquivo descriptografado
-    with open('.env', 'wb') as file:
+    with open(PATH_ENV, 'wb') as file:
         file.write(content_decoded)
 
-    os.remove('.enc')
+    os.remove(PATH_ENC)
 
 
 # define ou redefine o valor de uma variável de ambiente
 def set_env(reload: bool=True, **envs):
-    if os.path.exists('.enc'):
+    if os.path.exists(PATH_ENC):
         decode_env()
 
     for key in envs:
@@ -185,7 +192,7 @@ def set_env(reload: bool=True, **envs):
         elif item == '':
             item = 'Null'
 
-        set_key('.env', key, str(item))
+        set_key(PATH_ENV, key, str(item))
         env_logger().info(f'The environment variable "{key}" has been assigned the value "{item}"')
 
     # recarrega as variáveis de ambiente
@@ -202,8 +209,9 @@ def get_env(env_name: str, digit: bool=False, alt=None, typ: type=int):
         try:
             float(env)
             return True
-        except ValueError:
-            return False
+        except Exception as e:
+            if isinstance(e, (ValueError, TypeError)):
+                return False
 
     if env == 'None':
         env = None
@@ -220,7 +228,7 @@ def get_env(env_name: str, digit: bool=False, alt=None, typ: type=int):
 # carrega as variáveis de ambiente
 def load_file_env(reload: bool=False):
     global _initialized
-    global BOT_NAME, ADM, GITHUB, LANG
+    global BOT_NAME, ADM, GITHUB, LANG, DEBUG
     global DB_USER, DB_PASSWORD, DB_HOST, DB_NAME, DB_PORT, DB_IS_CONFIGURED
     global ACCESS_KEY, SECRET_KEY, API_IS_CONFIGURED
     global TIME_CHANGE_KEY, TIME_CHANGE_BACKUP_KEY
@@ -234,17 +242,18 @@ def load_file_env(reload: bool=False):
         return
         
     # garante que .env exista
-    if not os.path.exists('.enc') and not os.path.exists('.env'):
+    if not os.path.exists(PATH_ENC) and not os.path.exists(PATH_ENV):
         set_default_env(True if not reload and not _initialized else False)
     
     decode_env()
-    load_dotenv(override=True)
+    load_dotenv(PATH_ENV, override=True)
 
     # dados do bot
     BOT_NAME = get_env('BOT_NAME', alt='CryptoSentinel')
     ADM = get_env('ADM', 'paulindavzl')
     GITHUB = get_env('GITHUB', 'https://github.com/paulindavzl')
     LANG = get_env('LANG', alt='pt')
+    DEBUG = get_env('DEBUG', alt=True)
 
     # dados para conexão com servidor MySQL
     DB_USER = get_env('DB_USER')
@@ -294,6 +303,7 @@ def load_file_env(reload: bool=False):
 
 # realiza a leitura inicial de .env
 try:
+    if not os.path.exists('./data'): os.makedirs('./data', exist_ok=True)
     load_file_env()
 except Exception as e:
     env_logger().critical(f'A critical error has occurred:\n{traceback.format_exc()}')

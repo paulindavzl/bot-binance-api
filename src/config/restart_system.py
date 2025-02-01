@@ -4,11 +4,12 @@ from src.core.lang import c, path, langs
 from src.core.utils import wait, clear
 from src.config import config_logger
 
-def run(envlib, autoconfirm: bool=False, autoden: bool=False):
-    logs = './logs'
-    enc = './.enc'
-    env = './.env'
-    key = './.key'
+def run(envlib, autoconfirm: bool=False, autoden: bool=False, test: bool=False):
+    logs = 'logs'
+    enc = 'data/.enc'
+    env = 'data/.env'
+    key = 'data/.key'
+    backup = 'data/backup.key'
 
     restart_pass = 'RESTART SYSTEM'
     config_logger().warning(f'System Restore has started.\nPass: {restart_pass}\nAutoconfirm: {str(autoconfirm)}\nAutodeny: {autoden}')
@@ -23,8 +24,9 @@ def run(envlib, autoconfirm: bool=False, autoden: bool=False):
         if os.path.exists(logs):
             logs_list = os.listdir(logs)
             for log in logs_list:
-                os.remove(f'{logs}/{log}')
-        
+                if log != 'system.log':
+                    os.remove(os.path.join(logs, log))
+            
         # apaga .key 
         if os.path.exists(key):
             os.remove(key)
@@ -33,13 +35,19 @@ def run(envlib, autoconfirm: bool=False, autoden: bool=False):
         if os.path.exists(enc):
             os.remove(enc)
 
-        # apaga .envlib 
+        # apaga .env
         if os.path.exists(env):
-            os.remove(envlib)
+            os.remove(env)
+
+        # apaga backup.key
+        if os.path.exists(backup):
+            os.remove(backup)
 
         config_logger().warning('The system has been restarted')
         clear(c(langs(envlib)[envlib.LANG]['RESTART_SYSTEM_SUCCESSFULLY'], 'g'))
         wait(envlib, langs)
+        envlib._initialized = False
+        envlib.load_file_env()
         return
     
     config_logger().info('Restore canceled')

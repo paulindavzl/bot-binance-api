@@ -5,7 +5,7 @@ from src.core.utils import hide_data as hide, clear, Colorize as color
 c = color(color().colors('y')).colorize
 
 def path(env):
-    p = f'({color().colorize("bot-binance-api", 'g')}) {env.BOT_NAME.replace(' ', '_')}:\configure>'
+    p = fr'({color().colorize("bot-binance-api", 'g')}) {env.BOT_NAME.replace(' ', '_')}:\configure>'
     return p # simula um path
 
 def langs(env):
@@ -17,12 +17,11 @@ def langs(env):
     Nome do bot: {c(env.BOT_NAME, 'g')}
     Admin. do bot: {c(env.ADM, 'g')}
     GitHub do Admin.: {c(env.GITHUB, 'g')}
+    Debug: {c(f'ON - {c('Desative em produção (OFF)', 'r')}' if env.DEBUG else 'OFF', 'g')}
     Status do banco de dados: {c('já configurado', 'g') if env.DB_IS_CONFIGURED else c('não configurado', 'r')}
     Status da API Binance: {c('já configurada', 'g') if env.API_IS_CONFIGURED else c('não configurada', 'r')}
     Tempo de troca de chaves (chave principal/backup):  {c(f'{env.TIME_CHANGE_KEY}/{env.TIME_CHANGE_BACKUP_KEY}', 'g')} (em segundos)
-
-    {c(f'Por favor, realize a configuração completa de cada elemento ({c("banco de dados/API Binance", "w", "r")}) para alterar o seus respectivos {c('STATUS', 'w', 'r')}.\nNão é possível iniciar o bot por {c("poetry run app", "w", "r")} ou {c("docker-compose run --service-ports api", "w", "r")} caso o {c("STATUS", "w", "r")} dos elementos não estejam como\n{c("configurado", "g")}', 'r')}
-
+    {c(f'\nPor favor, realize a configuração completa de cada elemento ({c("banco de dados/API Binance", "w", "r")}) para alterar o seus respectivos {c('STATUS', 'w', 'r')}.\nNão é possível iniciar o bot por {c("poetry run app", "w", "r")} ou {c("docker-compose run --service-ports api", "w", "r")} caso o {c("STATUS", "w", "r")} dos elementos não estejam como\n{c("configurado", "g")}\n', 'r') if not all([env.DB_IS_CONFIGURED, env.API_IS_CONFIGURED]) else ''}
     Digite [{c('--help', 'w')}] para ver os comandos ou [{c('exit', 'r')}] para sair
 
     Type [{c('--lang en', 'w')}] to change the language to English
@@ -39,7 +38,10 @@ def langs(env):
             ex: {c('--adm paulindavzl', 'w')}
 
         [{c('--github', 'w')}] para definir o {c('GitHub', 'w')} do administrador. Atual: {c(env.GITHUB, 'g')}.
-            ex: {c('--github https://github.com/paulindavzl', 'w')}
+            ex: {c('--github https://github.com/paulindavzl', 'w')},
+
+        [{c('--debug', 'w')}] para alterar o modo de operação do bot (on/off). Atual: {c(env.GITHUB, 'g')}.
+            ex: {c('--debug on/off', 'w')} {c(f'Usar valores diferente de {c("on/off", "w", "r")} resultará no valor padrão ({c("on", "w", "r")})', 'r')}
 
     Comandos para definir configurações do banco de dados ({c('já configurado', 'g') if env.DB_IS_CONFIGURED else c('não configurado', 'r')}):
         
@@ -89,6 +91,8 @@ def langs(env):
         [{c('-n', 'w')}] para {c('negar', 'r')} todas as mudanças automaticamente ({c('somente no final do comando', 'r')})
             ex: {c('--secretkey my_secret_key_123 --n', 'w')}
 
+        [{c('--set api/dbs', 'w')}] para definir cada elemento configurado.
+
     Nota: 
         Para usar espaços em branco ou caractéres especiais, use aspas simples ou duplas:
             exs: 
@@ -107,13 +111,15 @@ def langs(env):
 
             'VALUE_ERROR_EMPTY': 'ValueError: Este comando exige um valor e não pode estar vazio. Comando: ',
 
+            'VALUE_ERROR_SET': 'ValueError: O comando set aceita somente api/dbs como valor',
+
             'TYPE_ERROR': 'TypeError: Estes comandos não podem ser usados juntos. Comandos: ',
 
             'TYPE_ERROR_RESTART': 'TypeError: O comando --restart_system não pode ser usado com outros comandos (exceto -y / -n). Comando: ',
 
             'SINTAXE_ERROR': 'SintaxeError: O comando possui caractére inválido. Comando: ',
 
-            'SINTAXE_ERROR_INVALID': 'O comando pode estar escrito de forma errada ou não existe. Comando: ',
+            'SINTAXE_ERROR_INVALID': 'SintaxeError: O comando pode estar escrito de forma errada ou não existe. Comando: ',
 
             'SINTAXE_ERROR_VALUE': 'SintaxeError: O valor deste comando possui caractéres inválidos. Comando: ',
 
@@ -135,18 +141,18 @@ def langs(env):
     Bot name: {c(env.BOT_NAME, 'g')}
     Admin. from bot: {c(env.ADM, 'g')}
     Admin GitHub: {c(env.GITHUB, 'g')}
+    Debug: {c(f'ON - {c('Disable in production (OFF)', 'r')}' if env.DEBUG else 'OFF', 'g')}
     Database status: {c('already configured', 'g') if env.DB_IS_CONFIGURED else c('not configured', 'r')}
     Binance API Status: {c('already configured', 'g') if env.API_IS_CONFIGURED else c('not configured', 'r')}
     Key exchange time (main/backup key): {c(f'{env.TIME_CHANGE_KEY}/{env.TIME_CHANGE_BACKUP_KEY}', 'g')} (in seconds)
-
-    {c(f'Please perform full configuration of each element ({c("Binance database/API", "w", "r")}) to change their respective {c('STATUS', 'w', 'r')}.\nCannot start the bot by {c("poetry run app", "w", "r")} or {c("docker-compose run --service-ports api", "w", "r")} if the {c("STATUS", "w", "r")} of the elements are not as\n{c("configured", "g")}', 'r')}
+    {c(f'\nPlease perform full configuration of each element ({c("Binance database/API", "w", "r")}) to change their respective {c('STATUS', 'w', 'r')}.\nCannot start the bot by {c("poetry run app", "w", "r")} or {c("docker-compose run --service-ports api", "w", "r")} if the {c("STATUS", "w", "r")} of the elements are not as\n{c("configured", "g")}\n', 'r') if not all([env.DB_IS_CONFIGURED, env.API_IS_CONFIGURED]) else ''}
 
     Type [{c('--help', 'w')}] to see the commands or [{c('exit', 'r')}] to exit
 
     Digite [{c('--lang pt', 'w')}] para alterar o idioma para Português
     ''',
 
-            'ENTER_TO_CONTINUE': f'Press {c('ENTER', 'w')} at any time to continue\n{path} ',
+            'ENTER_TO_CONTINUE': f'Press {c('ENTER', 'w')} at any time to continue\n{path(env)} ',
 
             'HELP_COMMANDS': f'''Commands to define bot information ({c('visible only in the WEB interface', 'r')}):
 
@@ -157,7 +163,10 @@ def langs(env):
             ex: {c('--adm paulindavzl', 'w')}
 
         [{c('--github', 'w')}] to set the admin's {c('GitHub', 'w')}. Current: {c(env.GITHUB, 'g')}.
-            ex: {c('--github https://github.com/paulindavzl', 'w')}
+            ex: {c('--github https://github.com/paulindavzl', 'w')},
+
+        [{c('--debug', 'w')}] to change the bot's operating mode (on/off). Current: {c(env.GITHUB, 'g')}.
+            ex: {c('--debug on/off', 'w')} {c(f'Using values ​​other than {c("on/off", "w", "r")} will result in the default value ({c("on", "w", "r")})', 'r')}
 
     Commands to configure database settings ({c('already configured', 'g') if env.DB_IS_CONFIGURED else c('not configured', 'r')}):
         
@@ -207,9 +216,11 @@ def langs(env):
         [{c('-n', 'w')}] to {c('negate', 'r')} all changes automatically ({c('only at end of command', 'r')})
             ex: {c('--secretkey my_secret_key_123 --n', 'w')}
 
+        [{c('--set api/dbs', 'w')}] to set each configured element.
+
     Note: 
         To use whitespace or special characters, use single or double quotes:
-            eg: 
+            ex: 
                 {c('--pass my password 123', 'r')}
                 {c('--pass "my password 123"', 'g')}
 
@@ -225,15 +236,17 @@ def langs(env):
 
             'VALUE_ERROR_EMPTY': 'ValueError: This command requires a value and cannot be empty. Command: ',
 
+            'VALUE_ERROR_SET': 'ValueError: Set command accepts only api/dbs as value',
+
             'TYPE_ERROR': 'TypeError: These commands cannot be used together. Commands: ',
 
             'TYPE_ERROR_RESTART': 'TypeError: The --restart_system command cannot be used with other commands (except -y / -n). Command: ',
 
-            'SYNTAXE_ERROR': 'SyntaxError: The command has an invalid character. Command: ',
+            'SINTAXE_ERROR': 'SyntaxError: The command has an invalid character. Command: ',
             
-            'SYNTAX_ERROR_INVALID': 'The command may be written wrong or does not exist. Command: ',
+            'SINTAXE_ERROR_INVALID': 'SintaxeError: The command may be written wrong or does not exist. Command: ',
 
-            'SYNTAXE_ERROR_VALUE': 'SyntaxError: The value of this command has invalid characters. Command: ',
+            'SINTAXE_ERROR_VALUE': 'SyntaxError: The value of this command has invalid characters. Command: ',
 
             'ALL_CANCELED': 'All commands were canceled due to the presence of "-n".',
 

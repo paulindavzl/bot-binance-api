@@ -15,7 +15,7 @@ class ParserError:
 class Parser:
     def __init__(self, cmd: str):
         self._cmd = cmd
-        self._valid_commands = ['--lang', '--user', '--host', '--port', '--pass', '--dbname', '--name', '--github', '--adm', '--accesskey', '--secretkey', '--timekey', '--timebackup', '--restart_system', '-y', '-n']
+        self._valid_commands = ['--debug', '--lang', '--user', '--host', '--port', '--pass', '--dbname', '--name', '--github', '--adm', '--accesskey', '--secretkey', '--timekey', '--timebackup', '--restart_system', '-y', '-n', '--set']
         self._unique_cmd = 0
         self._cmd_used = []
         self._cmd_bools = ['-y', '-n', '--restart_system'] # comandos que exigem valores booleanos
@@ -47,7 +47,7 @@ class Parser:
                 # adiciona os comandos e valores no dicionário
                 self._commands[command] = value.strip('"\'') if value else True
 
-    
+
     # agrupa as verificações de erros
     def _validate(self, cmd, value):
         permitted_chars = set(string.ascii_letters + string.digits + '-_.@/:')
@@ -86,6 +86,11 @@ class Parser:
             self._commands = {'err': ParserError('value_error', cmd, 'empty')}
             self._err = True
 
+        elif cmd == '--set':
+            if value not in ['api', 'dbs']:
+                self._commands = {'err': ParserError('value_error', cmd, 'set')}
+                self._err = True
+
         elif self._unique_cmd > 1:
             self._commands = {'err': ParserError('type_error', '-y & -n')}
             self._err = True
@@ -100,11 +105,6 @@ class Parser:
             if not len(cmd) == 2 or not cmd.startswith('-'):
                 self._commands = {'err': ParserError('sintaxe_error', cmd, 'invalid')}
                 self._err = True
-
-        # verfica se o comando possui somente caractéres permitidos
-        elif not set(cmd).issubset(permitted_chars):
-            self._commands = {'err': ParserError('sintaxe_error', cmd)}
-            self._err = True
 
         # verifica se o valor possui somente caractéres permitidos
         if isinstance(value, str) and not ((value.startswith('"') and value.endswith('"')) or (value.startswith("'") and value.endswith("'"))) and not set(value).issubset(permitted_chars):

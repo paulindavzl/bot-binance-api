@@ -17,6 +17,9 @@ def show_error(err: ParserError, env) -> str:
 
             elif err.typ == 'empty':
                 msg = langs(env)[env.LANG]['VALUE_ERROR_EMPTY'] + err.item
+
+            elif err.typ == 'set':
+                msg = langs(env)[env.LANG]['VALUE_ERROR_SET']
         
         case 'type_error':
             if err.typ == 'command':

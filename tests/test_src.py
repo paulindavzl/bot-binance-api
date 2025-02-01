@@ -6,35 +6,19 @@ import logging
 from cryptography.fernet import InvalidToken
 from dotenv import load_dotenv
 import src.__init__ as env
+from utils import remove_files
 
 
 # apaga todos os logs, .key (backup.key), .enc e .env (não executar teste fora do contêiner Docker de testes [docker-compose testes])
 @pytest.fixture
 def restart_system():
-    logs = './logs'
-    delete_this = ['./.enc', './.env', './.key', './backup.key']
-
-    def remove_all():
-        logging.shutdown()
-
-        # apaga todos os logs
-        if os.path.exists(logs):
-            logs_list = os.listdir(logs)
-            for log in logs_list:
-                os.remove(f'{logs}/{log}')
-        
-        for item in delete_this:
-            if os.path.exists(item):
-                os.remove(item)
-        
-        
-    remove_all()
+    remove_files()
 
     env.load_file_env(True)
 
     yield
 
-    remove_all()
+    remove_files()
 
 
 
@@ -46,7 +30,7 @@ def test_set_default_env(restart_system):
 
     # decodifica e limpa o arquivo .enc/.env
     env.decode_env()
-    with open('.env', 'w') as file:
+    with open(env.PATH_ENV, 'w') as file:
         file.write('')
     env.encode_env()
 
@@ -107,24 +91,24 @@ def test_get_key(restart_system):
 
 # codifica/decodifica o arquivo .env
 def test_decode_env_encode_env(restart_system):
-    if os.path.exists('.enc'):
+    if os.path.exists(env.PATH_ENC):
         env.decode_env() # decodifica o arquivo .enc
 
-    assert os.path.exists('.env') # confirma que .enc foi decodificado
-    assert not os.path.exists('.enc') # confirma que .enc foi excluído
+    assert os.path.exists(env.PATH_ENV) # confirma que .enc foi decodificado
+    assert not os.path.exists(env.PATH_ENC) # confirma que .enc foi excluído
 
     env.encode_env() # codifica o arquivo .env
 
-    assert os.path.exists('.enc') # confirma que .env foi codificado
+    assert os.path.exists(env.PATH_ENC) # confirma que .env foi codificado
 
-    assert not os.path.exists('.env') # confirma .env foi excluído
+    assert not os.path.exists(env.PATH_ENV) # confirma .env foi excluído
 
 
 # tenta decodificar o arquivo com uma chave inválida
 def test_decode_env_invalid_token(restart_system):
-    if os.path.exists('.key'):
-        os.remove('.key')
-        os.remove('backup.key')
+    if os.path.exists(env.PATH_KEY):
+        os.remove(env.PATH_KEY)
+        os.remove(env.PATH_BACKUP)
 
     with pytest.raises(InvalidToken, match=re.escape('There was an error trying to decrypt the environment variables.')):
         env.decode_env()

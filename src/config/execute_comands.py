@@ -14,7 +14,7 @@ class Execute:
         self._response = response
         self._y = False
         self._n = False
-        self._translation = {'--name': 'BOT_NAME', '--adm': 'ADM', '--github': 'GITHUB', '--lang': 'LANG', '--user': 'DB_USER', '--host': 'DB_HOST', '--port': 'DB_PORT', '--pass': 'DB_PASSWORD', '--dbname': 'DB_NAME', '--accesskey': 'ACCESS_KEY', '--secretkey': 'SECRET_KEY', '--timekey': 'TIME_CHANGE_KEY', '--timebackup': 'TIME_CHANGE_BACKUP_KEY'}
+        self._translation = {'--name': 'BOT_NAME', '--adm': 'ADM', '--github': 'GITHUB', '--lang': 'LANG', '--debug': 'DEBUG', '--user': 'DB_USER', '--host': 'DB_HOST', '--port': 'DB_PORT', '--pass': 'DB_PASSWORD', '--dbname': 'DB_NAME', '--accesskey': 'ACCESS_KEY', '--secretkey': 'SECRET_KEY', '--timekey': 'TIME_CHANGE_KEY', '--timebackup': 'TIME_CHANGE_BACKUP_KEY'}
         self._translate()
         self._execute()
 
@@ -32,7 +32,10 @@ class Execute:
         self._restart_system = self._commands.pop('--restart_system') if self._commands.get('--restart_system') else False
 
         for cmd in self._commands:
-            self._tranlasted_commands.append([cmd, self._translation[cmd]])
+            if cmd != '--set':
+                self._tranlasted_commands.append([cmd, self._translation[cmd]])
+            else:
+                self._tranlasted_commands.append([cmd, 'API_IS_CONFIGURED' if self._commands[cmd] == 'api' else 'DB_IS_CONFIGURED'])
 
     
     # executa os comandos
@@ -61,6 +64,18 @@ class Execute:
                 vl = self._commands[command[0]]
                 msg = langs(self._env)[self._env.LANG]['EXECUTE_COMMAND'] + f'{command[0]} {vl if set(vl).issubset(permitted_chars) else f"{vl}"}'
                 clear(c(msg, "w"))
+
+                if command[1] == 'DEBUG':
+                    if vl.lower() == 'on':
+                        vl = True
+                    elif vl.lower() == 'off':
+                        vl = False
+                    else:
+                        vl = True
+
+                if command[0] == '--set':
+                    vl = True
+
                 response = 'y'
                 if not self._y:
                     response = input(f'{path(self._env)}(n) ')
@@ -75,20 +90,28 @@ class Execute:
                     kwarg_cmd = {command[1]:vl}
                     self._env.set_env(reload=True, **kwarg_cmd)
 
+                    if command[0] == '--debug':
+                        if vl: vl = 'on'
+                        else: vl = 'off'
+
+                    elif command[0] == '--set':
+                        vl = 'api' if command[1] == 'API_IS_CONFIGURED' else 'dbs'
+
                     # garante que _executed seja uma lista
                     if not self._executed:
                         self._executed = []
 
                     self._executed.append(command[0])
 
-                    clear(f"\n\n{path(self._env) + response}\n{c('Executado:' if self._env.LANG == 'pt' else 'Executed:', 'g')} {c(f'{command[0]} {vl if set(vl).issubset(permitted_chars) else f"{vl}"}', 'w')}\n\n")
+                    clear(f"\n{path(self._env) + response}\n{c('Executado:' if self._env.LANG == 'pt' else 'Executed:', 'g')} {c(f'{command[0]} {vl if set(vl).issubset(permitted_chars) else f"{vl}"}', 'w')}\n")
+            
                     resp = False
                     wait(self._env, langs)
 
                 elif response == 'n' or len(response) == 0:
                     config_logger().info(f'The command {command[0]} was denied')
                     response = 'n'
-                    clear(f"\n\n{path(self._env) + response}\n{c('Cancelado:' if self._env.LANG == 'pt' else 'Canceled:', 'r')} {c(f'{command[0]} {vl if set(vl).issubset(permitted_chars) else f"{vl}"}', 'w')}\n\n")
+                    clear(f"\n\n{path(self._env) + response}\n{c('Cancelado:' if self._env.LANG == 'pt' else 'Canceled:', 'r')} {c(f'{command[0]} {vl if set(str(vl)).issubset(permitted_chars) else f"{vl}"}', 'w')}\n\n")
                     resp = False
                     wait(self._env, langs)
 
