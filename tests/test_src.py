@@ -45,50 +45,6 @@ def test_set_default_env(restart_system):
     assert env.DB_PORT == 3306
 
 
-# testa alterar a chave
-def test_change_key(restart_system):
-    # confirma o valor padrão das variáveis
-    assert env.TIME_CHANGE_KEY == 3600.0
-    assert env.TIME_CHANGE_BACKUP_KEY == 600.0
-
-    env.set_env(TIME_CHANGE_KEY=2, TIME_CHANGE_BACKUP_KEY=0.5)# altera as variáveis para um valor viável à testes
-
-    # confirma o valor das variáveis
-    assert env.TIME_CHANGE_KEY == 2
-    assert env.TIME_CHANGE_BACKUP_KEY == 0.5
-
-    old_key = env.get_key()
-    old_backup_key = env.get_key(backup=True)
-
-    assert old_key == old_backup_key # confirma que as chaves são iguais
-
-    env.change_key() # altera as chaves
-
-    new_key = env.get_key()
-    new_backup_key = env.get_key(backup=True)
-
-    assert new_key == new_backup_key # compara as novas chaves
-
-    # compara as novas chaves com as antigas
-    assert old_key != new_key
-    assert old_backup_key != new_backup_key
-
-
-# testa obter as chaves de decodificação
-def test_get_key(restart_system):
-    # obtém as chaves
-    old_key = env.get_key()
-    old_backup_key = env.get_key(backup=True)
-
-    # tenta obter as mesmas chaves
-    new_key = env.get_key()
-    new_backup_key = env.get_key(backup=True)
-
-    # confirma que as chaves são iguais
-    assert old_key == new_key
-    assert old_backup_key == new_backup_key
-
-
 # codifica/decodifica o arquivo .env
 def test_decode_env_encode_env(restart_system):
     if os.path.exists(env.PATH_ENC):

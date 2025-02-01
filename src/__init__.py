@@ -5,6 +5,7 @@ import traceback
 from logging.handlers import TimedRotatingFileHandler
 from cryptography.fernet import Fernet, InvalidToken
 from dotenv import load_dotenv, set_key
+import src.key_mechanism as km
 
 
 PATH_LOGS = './logs'
@@ -13,6 +14,12 @@ PATH_ENC = './data/.enc'
 PATH_KEY = './data/.key'
 PATH_BACKUP = './data/backup.key'
 
+class Envlib:
+
+    def __init__(self):
+        self.PATH_KEY = PATH_KEY
+        self.PATH_BACKUP = PATH_BACKUP
+        self.env_logger = env_logger
 
 # retorna o logger de env
 def env_logger():
@@ -73,56 +80,10 @@ def set_default_env(first: bool=False):
     else: # se não é a primeira vez, pode ser um problema
         env_logger().warning('Data in .env has been set as default again')
 
-    
-# altera a chave
-def change_key():
-    if os.path.exists(PATH_KEY):
-        os.remove(PATH_KEY)
-    
-    get_key() # chama get_key somente para gerar uma nova chave
-    env_logger().info('The key in .key has been changed')
-
-    time.sleep(float(TIME_CHANGE_BACKUP_KEY)) # espera o tempo definido para trocar o backup da chave
-
-    if os.path.exists(PATH_BACKUP):
-        os.remove(PATH_BACKUP)
-    
-    get_key(True)
-    env_logger().info('The key in backup.key has been changed')
-
-
-# obtém a chave de decodificação
-def get_key(backup: bool=False, generate_backup: bool=True) -> str:
-    key = ''
-    file_key = PATH_BACKUP if backup else PATH_KEY
-
-    # garante que .key exista
-    if not os.path.exists(file_key):
-        if backup:
-            if not os.path.exists(PATH_KEY):
-                get_key(generate_backup=False)
-            with open(PATH_KEY, 'rb') as file:
-                key = file.read()
-        else:
-            key = Fernet.generate_key()
-
-        with open(file_key, 'wb') as file:
-            file.write(key)
-        
-        if generate_backup and not backup:
-            get_key(True)
-
-        env_logger().info(f'The {'backup' if backup else ''}.key file has been created') # carrega um log
-    
-    with open(file_key, 'rb') as file:
-        key = file.read()
-    
-    return key
-
 
 # codifica o arquivo .env
 def encode_env():
-    key = get_key() # obtém a chave
+    key = km.get_key(env=Envlib()) # obtém a chave
     content = ''
 
     if os.path.exists(PATH_ENC):
@@ -148,7 +109,7 @@ def encode_env():
 # decodifica o arquivo .enc
 def decode_env():
     content = ''
-    key = get_key()
+    key = km.get_key(env=Envlib())
 
     if os.path.exists(PATH_ENV):
         return 
@@ -163,7 +124,7 @@ def decode_env():
         fernet = Fernet(key)
         content_decoded = fernet.decrypt(content)
     except InvalidToken:
-        backup_key = get_key(True)
+        backup_key = km.get_key(True, env=Envlib())
         try:
             fernet = Fernet(backup_key)
             content_decoded = fernet.decrypt(content)
