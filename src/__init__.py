@@ -5,7 +5,8 @@ import traceback
 from logging.handlers import TimedRotatingFileHandler
 from cryptography.fernet import Fernet, InvalidToken
 from dotenv import load_dotenv, set_key
-import src.key_mechanism as km
+from src.key_mechanism import get_key
+from src.core.utils import hide_data as hide
 
 
 PATH_LOGS = './logs'
@@ -14,6 +15,7 @@ PATH_ENC = './data/.enc'
 PATH_KEY = './data/.key'
 PATH_BACKUP = './data/backup.key'
 
+# necessário para execução de src/key_mechanism.py
 class Envlib:
 
     def __init__(self):
@@ -51,6 +53,8 @@ def set_default_env(first: bool=False):
             BOT_NAME='CryptoSentinel',
             ADM='paulindavzl',
             GITHUB='https://github.com/paulindavzl',
+            EMAIL_ADDRESS='Null',
+            EMAIL_PASSWORD='Null',
             LANG='pt',
             DEBUG=True,
 
@@ -68,6 +72,7 @@ def set_default_env(first: bool=False):
             # define informações de configurações gerais
             DB_IS_CONFIGURED=False,
             API_IS_CONFIGURED=False,
+            CERTIFICATE=False,
 
             # define o tempo de troca de chaves
             TIME_CHANGE_KEY = 3600, # segundos (60 min)
@@ -83,7 +88,7 @@ def set_default_env(first: bool=False):
 
 # codifica o arquivo .env
 def encode_env():
-    key = km.get_key(env=Envlib()) # obtém a chave
+    key = get_key(env=Envlib()) # obtém a chave
     content = ''
 
     if os.path.exists(PATH_ENC):
@@ -109,7 +114,7 @@ def encode_env():
 # decodifica o arquivo .enc
 def decode_env():
     content = ''
-    key = km.get_key(env=Envlib())
+    key = get_key(env=Envlib())
 
     if os.path.exists(PATH_ENV):
         return 
@@ -124,7 +129,7 @@ def decode_env():
         fernet = Fernet(key)
         content_decoded = fernet.decrypt(content)
     except InvalidToken:
-        backup_key = km.get_key(True, env=Envlib())
+        backup_key = get_key(env=Envlib(), backup=True)
         try:
             fernet = Fernet(backup_key)
             content_decoded = fernet.decrypt(content)
@@ -154,6 +159,7 @@ def set_env(reload: bool=True, **envs):
             item = 'Null'
 
         set_key(PATH_ENV, key, str(item))
+        if key in ['DB_PASSWORD', 'EMAIL_PASSWORD']: item = hide(item)
         env_logger().info(f'The environment variable "{key}" has been assigned the value "{item}"')
 
     # recarrega as variáveis de ambiente
@@ -164,7 +170,7 @@ def set_env(reload: bool=True, **envs):
 
 
 # retorna uma variável específica
-def get_env(env_name: str, digit: bool=False, alt=None, typ: type=int):
+def get_env(env_name: str, digit: bool=False, alt=None, typ: type=int, null: bool=False):
     env = os.getenv(env_name, alt)
     def isnumber() -> bool:
         try:
@@ -175,6 +181,8 @@ def get_env(env_name: str, digit: bool=False, alt=None, typ: type=int):
                 return False
 
     if env == 'None':
+        env = None
+    elif env == 'Null' and null:
         env = None
     elif env == 'True':
         env = True
@@ -189,7 +197,7 @@ def get_env(env_name: str, digit: bool=False, alt=None, typ: type=int):
 # carrega as variáveis de ambiente
 def load_file_env(reload: bool=False):
     global _initialized
-    global BOT_NAME, ADM, GITHUB, LANG, DEBUG
+    global BOT_NAME, ADM, GITHUB, LANG, DEBUG, EMAIL_ADDRESS, EMAIL_PASSWORD, CERTIFICATE
     global DB_USER, DB_PASSWORD, DB_HOST, DB_NAME, DB_PORT, DB_IS_CONFIGURED
     global ACCESS_KEY, SECRET_KEY, API_IS_CONFIGURED
     global TIME_CHANGE_KEY, TIME_CHANGE_BACKUP_KEY
@@ -213,6 +221,8 @@ def load_file_env(reload: bool=False):
     BOT_NAME = get_env('BOT_NAME', alt='CryptoSentinel')
     ADM = get_env('ADM', 'paulindavzl')
     GITHUB = get_env('GITHUB', 'https://github.com/paulindavzl')
+    EMAIL_ADDRESS = get_env('EMAIL_ADDRESS', null=True)
+    EMAIL_PASSWORD = get_env('EMAIL_PASSWORD', null=True)
     LANG = get_env('LANG', alt='pt')
     DEBUG = get_env('DEBUG', alt=True)
 
@@ -256,6 +266,7 @@ def load_file_env(reload: bool=False):
     # dados de configurações gerais
     DB_IS_CONFIGURED = get_env('DB_IS_CONFIGURED')
     API_IS_CONFIGURED = get_env('API_IS_CONFIGURED')
+    CERTIFICATE = get_env('CERTIFICATE')
 
     _initialized = True
     encode_env()

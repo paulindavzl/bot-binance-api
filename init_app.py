@@ -13,7 +13,7 @@ o bot é iniciado automaticamente quando Docker for executado. execute docker-co
 
 def run():
     try: 
-        HOST = '0.0.0.0'
+        HOST = '127.0.0.1'
         PORT = 5000
         sys_logger().info(f'API started.\n\tHOST: {HOST}\n\tPORT: {PORT}\n\tDEBUG: {str(env.DEBUG)}')
 

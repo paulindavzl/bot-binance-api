@@ -2,7 +2,7 @@ import pytest
 from unittest.mock import patch
 import src.__init__ as env
 from src.config.execute_comands import Execute
-from utils import remove_files
+from tests import remove_files
 
 
 @pytest.fixture

@@ -2,7 +2,7 @@ import time
 import pytest
 import src.__init__ as env
 from src.key_mechanism import default_mechanism_change_key, default_mechanism_get_key
-from utils import remove_files
+from tests import remove_files
 
 @pytest.fixture
 def restart_system():

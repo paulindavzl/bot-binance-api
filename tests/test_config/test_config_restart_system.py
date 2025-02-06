@@ -3,7 +3,7 @@ import pytest
 from unittest.mock import patch
 import src.__init__ as env
 from src.config.restart_system import run
-from utils import remove_files, is_restarted_system
+from tests import remove_files, is_restarted_system
 
 @pytest.fixture
 def restart_system():

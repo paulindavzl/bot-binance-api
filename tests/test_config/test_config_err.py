@@ -3,7 +3,7 @@ import pytest
 import src.__init__ as env
 from src.config.err import show_error
 from src.core.lang import langs
-from utils import remove_files
+from tests import remove_files
 
 
 @pytest.fixture

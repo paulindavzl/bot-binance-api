@@ -5,12 +5,6 @@ from src.core.utils import wait, clear
 from src.config import config_logger
 
 def run(envlib, autoconfirm: bool=False, autoden: bool=False, test: bool=False):
-    logs = 'logs'
-    enc = 'data/.enc'
-    env = 'data/.env'
-    key = 'data/.key'
-    backup = 'data/backup.key'
-
     restart_pass = 'RESTART SYSTEM'
     config_logger().warning(f'System Restore has started.\nPass: {restart_pass}\nAutoconfirm: {str(autoconfirm)}\nAutodeny: {autoden}')
     response = restart_pass
@@ -21,27 +15,17 @@ def run(envlib, autoconfirm: bool=False, autoden: bool=False, test: bool=False):
         logging.shutdown()
 
         # apaga todos os logs
-        if os.path.exists(logs):
-            logs_list = os.listdir(logs)
+        if os.path.exists('logs'):
+            logs_list = os.listdir('logs')
             for log in logs_list:
                 if log != 'system.log':
-                    os.remove(os.path.join(logs, log))
+                    os.remove(os.path.join('logs', log))
             
-        # apaga .key 
-        if os.path.exists(key):
-            os.remove(key)
-        
-        # apaga .enc 
-        if os.path.exists(enc):
-            os.remove(enc)
-
-        # apaga .env
-        if os.path.exists(env):
-            os.remove(env)
-
-        # apaga backup.key
-        if os.path.exists(backup):
-            os.remove(backup)
+        # apaga todos as datas
+        if os.path.exists('data'):
+            data_list = os.listdir('data')
+            for item in data_list:
+                os.remove(os.path.join('data', item))
 
         config_logger().warning('The system has been restarted')
         clear(c(langs(envlib)[envlib.LANG]['RESTART_SYSTEM_SUCCESSFULLY'], 'g'))

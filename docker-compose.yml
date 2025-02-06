@@ -19,7 +19,6 @@ services:
     command: poetry run tests
     volumes:
       - ./src:/app/src  # Mapeia o diretório de código-fonte
-      - ./test_data:/app/src
     depends_on:
       - app  # Garante que o serviço 'app' esteja pronto antes de executar os testes
   configure:

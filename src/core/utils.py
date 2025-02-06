@@ -1,5 +1,4 @@
 import os
-from src.config import config_logger
 
 # esconde um dado
 def hide_data(data: str) -> str:
@@ -44,3 +43,5 @@ class Colorize:
 
 def wait(env, langs):
     if input(langs(env)[env.LANG]['ENTER_TO_CONTINUE']) == 'exit': clear(); exit()
+
+

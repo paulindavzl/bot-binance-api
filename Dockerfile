@@ -1,5 +1,5 @@
 # Use uma imagem base com Python
-FROM python:3.13-slim
+FROM python:3.12.8-slim
 
 # Instala dependências necessárias
 RUN apt-get update && apt-get install -y \
@@ -8,6 +8,7 @@ RUN apt-get update && apt-get install -y \
     libssl-dev \
     libffi-dev \
     python3-dev \
+    openssl \
     && rm -rf /var/lib/apt/lists/*
 
 # Instala o Poetry
@@ -20,7 +21,7 @@ ENV PATH="/root/.local/bin:$PATH"
 WORKDIR /app
 
 # Copia os arquivos de configuração do Poetry para o contêiner
-COPY pyproject.toml poetry.lock* README.md app.py configure.py tests.py /app/
+COPY pyproject.toml poetry.lock* README.md init_app.py init_configure.py init_tests.py /app/
 
 # Copia o restante do código para o contêiner
 COPY src/ /app/src/

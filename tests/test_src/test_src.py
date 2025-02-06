@@ -6,7 +6,7 @@ import logging
 from cryptography.fernet import InvalidToken
 from dotenv import load_dotenv
 import src.__init__ as env
-from utils import remove_files
+from tests import remove_files
 
 
 # apaga todos os logs, .key (backup.key), .enc e .env (não executar teste fora do contêiner Docker de testes [docker-compose testes])

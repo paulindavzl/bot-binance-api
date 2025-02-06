@@ -43,4 +43,15 @@ def is_restarted_system() -> bool:
             if item != 'system.log':
                 return False
 
-    return True        
+    return True  
+
+
+class Path:
+    def __init__(self):
+        self.cert = './data/cert.pem'
+        self.key = './data/key.pem'
+
+
+class FakeHandler:
+    async def handler_DATA(self, server, session, envelope):
+        return '250 Message accepted for delivery'

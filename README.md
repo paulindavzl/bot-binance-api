@@ -1,6 +1,6 @@
 # CryptoSentinel
 
-CryptoSentinel é uma API e bot desenvolvido para conectar-se à [Binance](https://binance.com/) e realizar operações automatizadas em criptomoedas. Ele foi projetado para ser seguro, flexível e fácil de configurar, mesmo para iniciantes.
+CryptoSentinel é uma API e bot desenvolvido para conectar-se à [Binance](https://binance.com/ "Site da Binance") e realizar operações automatizadas em criptomoedas. Ele foi projetado para ser seguro, flexível e fácil de configurar, mesmo para iniciantes.
 
 ## Dependências
 
@@ -17,27 +17,25 @@ Esta API/bot conta com diversas funcionalidades que facilitam sua implementaçã
 
 ### Prompt próprio
 
-A API tem um prompt de comandos que facilita a sua configuração, com o usuário podendo definir o Banco de Dados (MySQL) e a chaves de API para conexão com a Binance:
+A API tem um prompt de comandos que facilita a sua configuração, com o usuário podendo definir o Banco de Dados (MySQL) e a chaves da API [Binance](https://binance.com "Site da Binance"):
 
 ![Prompt de configuração](docs/img/prompt-configuration.png "Prompt de comando")
 
-O prompt possui uma versão em `português` e `inglês`. Veja [comandos](docs/COMMANDS.md).
+O prompt possui uma versão em `português` e `inglês`. Veja mais detalhes em [comandos](docs/COMMANDS.md "Guia de comandos").
 
 ### Facilidade de personalização
 
-Por meio do prompt de configuração é possível personalizar informações do bot, estas são acessadas por [endpoints](docs/ENDPOINTS.md) e ficam visíveis na interface WEB (em desenvolvimento). Veja [comandos](docs/COMMANDS.md).
+Por meio do prompt de configuração é possível personalizar informações do bot, estas são acessadas por [endpoints](docs/ENDPOINTS.md "Guia de endpoints") e ficam visíveis na interface WEB (em desenvolvimento). Veja mais detalhes em [comandos](docs/COMMANDS.md "Guia de comandos").
 
 ### Segurança
 
-As chaves de APIs, informações dos banco de dados e outras informações ficam salvas em variáveis de ambiente criptografadas.
+Todas as informações são criptografadas usando o mecanismo **AES-128-CBC**, o que garante uma boa segurança.
 
-![segurança](docs/img/security-image.png)
+O sistema também conta com um sistema de **LOGS** que registram todas as operações internas, isso ajuda a identificar e tratar erros, além de permitir monitorar o comportamento do sistema.
 
-O usuário pode definir um mecanismo para proteger as chaves (AWS) modificando duas funções em:
+O usuário também poderá gerar um **Certificado TSL Autoassinado**, que irá criptografar a comunicação servidor-cliente, garantindo a segurança e integridade dos dados.
 
-![mecanismo de chaves](docs/img/key-mechanism.png)
-
-Veja [segurança](docs/SECURITY.md)
+Veja mais detalhes em [segurança](docs/SECURITY.md "Segurança")
 
 ## Documentação
 

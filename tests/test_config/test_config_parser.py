@@ -1,7 +1,7 @@
 import pytest
 from src.config.parser import Parser, ParserError
 import src.__init__ as env
-from utils import is_parser_error
+from tests import is_parser_error
 
 
 # testa separar os comandos

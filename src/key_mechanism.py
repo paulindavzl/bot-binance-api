@@ -4,18 +4,26 @@ from cryptography.fernet import Fernet, InvalidToken
 
 
 # altera a chave
-def change_key():
+def change_key(env):
     '''script para alterar a chave
-    use seu próprio mecanismo, ele deve ter alterar a chave principal a depois do tempo em TIME_CHANGE_BACKUP_KEY (segundos) deve alterar a chave de backup'''
+    use seu próprio mecanismo, ele deve ter alterar a chave principal a depois do tempo em TIME_CHANGE_BACKUP_KEY (segundos) deve alterar a chave de backup
+    
+    Parâmetros:
+        env: carrega informações como TIME_CHANGE_BACKUP_KEY, env_logger e outras (veja src/__init__.py)'''
 
     # altere se necessário
-    default_mechanism_change_key() # altera a chave pela forma padrão
+    default_mechanism_change_key(env) # altera a chave pela forma padrão
 
 
 # obtém a chave de decodificação
-def get_key(backup: bool=False, generate_backup: bool=True, env=None) -> str:
+def get_key(env, backup: bool=False, generate_backup: bool=True) -> str:
     '''script para obter a chave de decodificação (principal e backup)
-    use seu próprio mecanismo, ele deve gerar uma chave principal e de backup e retorná-las quando necessário. SEMPRE DEVE RETORNAR UMA CHAVE STR'''
+    use seu próprio mecanismo, ele deve gerar uma chave principal e de backup e retorná-las quando necessário. SEMPRE DEVE RETORNAR UMA CHAVE STR
+    
+    Parâmetros:
+        env: carrega informações como TIME_CHANGE_BACKUP_KEY, env_logger e outras (veja src/__init__.py)
+        backup: indica se a chave é questão é a de backup ou a principal
+        generate_backup: indica se é para gerar backup ou não'''
 
     # altere se necessário
     key = default_mechanism_get_key(env, backup=backup, generate_backup=generate_backup) # gera e obtém uma chave (principal ou de backup)
@@ -36,7 +44,7 @@ def default_mechanism_change_key(env):
     if os.path.exists(env.PATH_BACKUP):
         os.remove(env.PATH_BACKUP)
     
-    get_key(True, env=env)
+    get_key(backup=True, env=env)
     env.env_logger().info('The key in backup.key has been changed')
 
 
@@ -59,7 +67,7 @@ def default_mechanism_get_key(env, backup: bool=False, generate_backup: bool=Tru
             file.write(key)
         
         if generate_backup and not backup:
-            get_key(True, env=env)
+            get_key(backup=True, env=env)
 
         env.env_logger().info(f'The {'backup' if backup else ''}.key file has been created') # carrega um log
     

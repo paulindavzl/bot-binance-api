@@ -17,6 +17,8 @@ def langs(env):
     Nome do bot: {c(env.BOT_NAME, 'g')}
     Admin. do bot: {c(env.ADM, 'g')}
     GitHub do Admin.: {c(env.GITHUB, 'g')}
+    Email: {c(env.EMAIL_ADDRESS, 'g') if env.EMAIL_ADDRESS else c('não configurado', 'r')}
+    Certificado TSL: {c('Gerado', 'g') if env.CERTIFICATE else c('Não gerado', 'r')}
     Debug: {c(f'ON - {c('Desative em produção (OFF)', 'r')}' if env.DEBUG else 'OFF', 'g')}
     Status do banco de dados: {c('já configurado', 'g') if env.DB_IS_CONFIGURED else c('não configurado', 'r')}
     Status da API Binance: {c('já configurada', 'g') if env.API_IS_CONFIGURED else c('não configurada', 'r')}
@@ -38,7 +40,19 @@ def langs(env):
             ex: {c('--adm paulindavzl', 'w')}
 
         [{c('--github', 'w')}] para definir o {c('GitHub', 'w')} do administrador. Atual: {c(env.GITHUB, 'g')}.
-            ex: {c('--github https://github.com/paulindavzl', 'w')},
+            ex: {c('--github https://github.com/paulindavzl', 'w')}
+
+        [{c('--emailaddress', 'w')}] para adicionar um email. Atual: {c(env.EMAIL_ADDRESS, 'g') if env.EMAIL_ADDRESS else c('não configurado', 'r')}.
+            ex: {c('--emailaddress my_email@example.com', 'w')}
+
+        [{c('--emailpass', 'w')}] para adicionar a senha do email. Atual: {c(hide(env.EMAIL_PASSWORD), 'g') if env.EMAIL_PASSWORD else c('não configurada', 'r')}.
+            ex: {c('--emailpass my_app_password', 'w')}
+
+        [{c('--sendemail', 'w')}] para enviar um email. {c('Disponível', 'g') if all([env.EMAIL_ADDRESS, env.EMAIL_PASSWORD]) else c('Termine a configuração do email.', 'r')}.
+            ex: {c('--emailaddress my_email@example.com', 'w')}
+
+        [{c('--certificate', 'w')}] para gerar um certificado TSL, que garante uma comunicação segura entre servidor e cliente.
+            ex: {c('--certificate', 'w')}
 
         [{c('--debug', 'w')}] para alterar o modo de operação do bot (on/off). Atual: {c(env.GITHUB, 'g')}.
             ex: {c('--debug on/off', 'w')} {c(f'Usar valores diferente de {c("on/off", "w", "r")} resultará no valor padrão ({c("on", "w", "r")})', 'r')}
@@ -131,7 +145,27 @@ def langs(env):
 
             'RESTART_SYSTEM_CONFIRM': f'Confirme que você quer reiniciar todo o sistema para configuração inicial.\nIsso apagará todos os arquivos contidos em {c('logs/', 'w', 'r')}, os arquivos {c('.env', 'w', 'r')}, {c('.enc', 'w', 'r')} e {c('.key', 'w', 'r')} também serão apagados!',
 
-            'RESTART_SYSTEM_SUCCESSFULLY': f'Todo o sistema foi restaurado para a configuração inicial.\nNote que informações contidas em {c('bancos de dados', 'w', 'g')} continuam inalteradas!\nAltere manualmente se necessário.'
+            'RESTART_SYSTEM_SUCCESSFULLY': f'Todo o sistema foi restaurado para a configuração inicial.\nNote que informações contidas em {c('bancos de dados', 'w', 'g')} continuam inalteradas!\nAltere manualmente se necessário.',
+
+            'EMAIL_NOT_CONFIGURED': f'{c('A configuração do email está incompleta.', 'r')} {c('Use --emailaddress para adicionar um email e --emailpass para adicionar a senha', 'w')}',
+
+            'SET_SUBJECT': c('Informe o assunto deste email: ', 'y', 'w'),
+
+            'SET_CONTENT': c('Informe o contúdo do email: ', 'y', 'w'),
+
+            'INVALID_CREDENTIALS': c('Os dados de endereço de e-mail ou senha estão incorretos! Não foi possível enviar o email.', 'r'),
+
+            'SUCCESSFULLY_EMAIL_SEND': c(f'O e-mail foi enviado com sucesso! {c('Verifique a Caixa de Entrada ou Spam', 'w')}', 'g'),
+
+            'CERTIFICATE_EXISTS': c('O certificado já existe!', 'r'),
+
+            'CERTIFICATE_INCOMPLETE': f'{c('O certificado existe, mas está incompleto!', 'r')} {c('Você deseja gerá-lo novamente?', 'w', 'w')} [{c("y", "g", "w")}/{c("n", "r", "w")}]',
+
+            'OPENSSL_UNINSTALED': f'{c('Parece que o OpenSSL não está instalado no seu sistema!', 'r')} {c('Talvez você esteja executando a API fora do contêiner Docker. Se for caso, instale o OpenSSL.', 'w')}',
+
+            'CERTIFICATE_GENERATED': c('O certificado TSL foi gerado com sucesso!', 'g'),
+
+            'CERTIFICATE_GENERATED_FAILED': c('Houve um erro ao gerar o certificado!', 'r')
         },
 
         # mensagens em inglês
@@ -141,6 +175,8 @@ def langs(env):
     Bot name: {c(env.BOT_NAME, 'g')}
     Admin. from bot: {c(env.ADM, 'g')}
     Admin GitHub: {c(env.GITHUB, 'g')}
+    Email: {c(env.EMAIL_ADDRESS, 'g') if env.EMAIL_ADDRESS else c('not configured', 'r')}
+    TSL Certificate: {c('Generated', 'g') if env.CERTIFICATE else c('Not generated', 'r')}
     Debug: {c(f'ON - {c('Disable in production (OFF)', 'r')}' if env.DEBUG else 'OFF', 'g')}
     Database status: {c('already configured', 'g') if env.DB_IS_CONFIGURED else c('not configured', 'r')}
     Binance API Status: {c('already configured', 'g') if env.API_IS_CONFIGURED else c('not configured', 'r')}
@@ -163,7 +199,19 @@ def langs(env):
             ex: {c('--adm paulindavzl', 'w')}
 
         [{c('--github', 'w')}] to set the admin's {c('GitHub', 'w')}. Current: {c(env.GITHUB, 'g')}.
-            ex: {c('--github https://github.com/paulindavzl', 'w')},
+            ex: {c('--github https://github.com/paulindavzl', 'w')}
+
+        [{c('--emailaddress', 'w')}] to add an email. Current: {c(env.EMAIL_ADDRESS, 'g') if env.EMAIL_ADDRESS else c('not configured', 'r')}.
+            ex: {c('--emailaddress my_email@example.com', 'w')}
+
+        [{c('--emailpass', 'w')}] to add the email password. Current: {c(hide(env.EMAIL_PASSWORD), 'g') if env.EMAIL_PASSWORD else c('not configured', 'r')}.
+            ex: {c('--emailpass my_app_password', 'w')}
+
+        [{c('--sendemail', 'w')}] to send an email. {c('Available', 'g') if all([env.EMAIL_ADDRESS, env.EMAIL_PASSWORD]) else c('Finish email configuration.', 'r')}.
+            ex: {c('--emailaddress my_email@example.com', 'w')}
+
+        [{c('--certificate', 'w')}] to generate a TSL certificate, which guarantees secure communication between server and client.
+            ex: {c('--certificate', 'w')}
 
         [{c('--debug', 'w')}] to change the bot's operating mode (on/off). Current: {c(env.GITHUB, 'g')}.
             ex: {c('--debug on/off', 'w')} {c(f'Using values ​​other than {c("on/off", "w", "r")} will result in the default value ({c("on", "w", "r")})', 'r')}
@@ -254,7 +302,17 @@ def langs(env):
 
             'INVALID_RESPONSE': 'Your response is not valid. Choose from the following: ',
 
-            'RESTART_SYSTEM_CONFIRM': f'Confirm that you want to reset the entire system to initial configuration.\nThis will delete all files contained in {c('logs/', 'w')}, the files {c('.env', 'w')}, {c('.enc', 'w')} and {c('.key', 'w')} will also be deleted!'
+            'RESTART_SYSTEM_CONFIRM': f'Confirm that you want to reset the entire system to initial configuration.\nThis will delete all files contained in {c('logs/', 'w')}, the files {c('.env', 'w')}, {c('.enc', 'w')} and {c('.key', 'w')} will also be deleted!',
+
+            'EMAIL_NOT_CONFIGURED': f'{c('Email configuration is incomplete.', 'r')} {c('Use --emailaddress to add an email and --emailpass to add a password', 'w') }',
+
+            'SET_SUBJECT': c('Enter the subject of this email: ', 'y', 'w'),
+
+            'SET_CONTENT': c('Enter the content of the email: ', 'y', 'w'),
+
+            'INVALID_CREDENTIALS': c('Email address or password data is incorrect! Email could not be sent.', 'r'),
+
+            'SUCCESSFULLY_EMAIL_SEND': c(f'The email was sent successfully! {c('Check your Inbox or Spam', 'w')}', 'g')
         }
     }
 

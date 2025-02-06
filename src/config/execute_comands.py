@@ -1,8 +1,8 @@
 import string
-from src.config import config_logger
-from src.config import restart_system
+from src.config import config_logger, restart_system, certificate
 from src.core.lang import langs, c, clear, path
 from src.core.utils import wait
+from src.core.emails import manager as email
 
 
 class Execute:
@@ -14,7 +14,7 @@ class Execute:
         self._response = response
         self._y = False
         self._n = False
-        self._translation = {'--name': 'BOT_NAME', '--adm': 'ADM', '--github': 'GITHUB', '--lang': 'LANG', '--debug': 'DEBUG', '--user': 'DB_USER', '--host': 'DB_HOST', '--port': 'DB_PORT', '--pass': 'DB_PASSWORD', '--dbname': 'DB_NAME', '--accesskey': 'ACCESS_KEY', '--secretkey': 'SECRET_KEY', '--timekey': 'TIME_CHANGE_KEY', '--timebackup': 'TIME_CHANGE_BACKUP_KEY'}
+        self._translation = {'--name': 'BOT_NAME', '--adm': 'ADM', '--github': 'GITHUB', '--lang': 'LANG', '--debug': 'DEBUG', '--user': 'DB_USER', '--host': 'DB_HOST', '--port': 'DB_PORT', '--pass': 'DB_PASSWORD', '--dbname': 'DB_NAME', '--accesskey': 'ACCESS_KEY', '--secretkey': 'SECRET_KEY', '--timekey': 'TIME_CHANGE_KEY', '--timebackup': 'TIME_CHANGE_BACKUP_KEY', '--emailaddress': 'EMAIL_ADDRESS', '--emailpass': 'EMAIL_PASSWORD'}
         self._translate()
         self._execute()
 
@@ -30,6 +30,13 @@ class Execute:
         self._y = self._commands.pop('-y')
         self._n = self._commands.pop('-n')
         self._restart_system = self._commands.pop('--restart_system') if self._commands.get('--restart_system') else False
+        self._certificate = self._commands.pop('--certificate') if self._commands.get('--certificate') else False
+
+ 
+        if '--sendemail' in self._commands:
+            email.SendEmail(self._env, to=self._commands['--sendemail'])
+            self._commands.pop('--sendemail')
+            wait(self._env, langs)
 
         for cmd in self._commands:
             if cmd != '--set':
@@ -52,6 +59,16 @@ class Execute:
             self._executed.append('--restart_system')
 
             return
+
+        if self._certificate:
+            certificate.gen_certificate(self._env)
+            self._env.load_file_env(True)
+            # garante que _executed seja uma lista
+            if not self._executed:
+                self._executed = []
+
+            self._executed.append('--restart_system')
+            wait(self._env, langs)
 
         for command in self._tranlasted_commands:
             if self._n:

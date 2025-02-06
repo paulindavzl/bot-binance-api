@@ -1,6 +1,6 @@
 import pytest
 import src.__init__ as env
-from utils import remove_files
+from tests import remove_files
 from src.config import check_system
 
 @pytest.fixture

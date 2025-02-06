@@ -15,10 +15,10 @@ class ParserError:
 class Parser:
     def __init__(self, cmd: str):
         self._cmd = cmd
-        self._valid_commands = ['--debug', '--lang', '--user', '--host', '--port', '--pass', '--dbname', '--name', '--github', '--adm', '--accesskey', '--secretkey', '--timekey', '--timebackup', '--restart_system', '-y', '-n', '--set']
+        self._valid_commands = ['--sendemail', '--emailaddress', '--emailpass', '--debug', '--lang', '--user', '--host', '--port', '--pass', '--dbname', '--name', '--github', '--adm', '--accesskey', '--secretkey', '--timekey', '--timebackup', '--restart_system', '-y', '-n', '--set', '--certificate']
         self._unique_cmd = 0
         self._cmd_used = []
-        self._cmd_bools = ['-y', '-n', '--restart_system'] # comandos que exigem valores booleanos
+        self._cmd_bools = ['-y', '-n', '--restart_system', '--certificate'] # comandos que exigem valores booleanos
         self._commands = {'-y': False, '-n': False} # garda os comandos e seus valores
         self._err = False
         self._parser()
