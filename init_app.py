@@ -2,8 +2,8 @@ import traceback
 import src.__init__ as env
 from src.main import app
 from src.system_logger import sys_logger
-from src.core.lang import c
 from src.config import check_system
+from src.core.emails.manager import SendEmail
 
 '''
 facilita a execução do bot
@@ -23,5 +23,12 @@ def run():
 
         app.run(host=HOST, port=PORT, debug=env.DEBUG)
     except Exception as e:
-        sys_logger().critical(f'A critical error has occurred:\n{traceback.format_exc()}')
+        sys_logger().critical(f'A critical error has occurred:\n\t{traceback.format_exc()}')
+        SendEmail(
+            env=env,
+            subject='critical_error',
+            to=env.EMAIL_ADDRESS,
+            content=traceback.format_exc(),
+            system=True
+        )
         raise e

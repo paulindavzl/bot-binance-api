@@ -65,3 +65,7 @@ Todos os LOGS podem ser acessados através do diretório `logs/`, localizado na 
 Você poderá gerar um **Certificado TSL Autoassinado**. Este certificado criptografa os dados transmitidos entre servidor e cliente, o que garante a sua segurança, autenticidade e integridade. Com um **Certificado TSL** gerado, automaticamente o sistema identifica e passa de **`HTTP`** para **`HTTPS`**.
 
 O **Certificado TSL** pode ser gerado por meio do [prompt de comandos](COMMANDS.md "Guia de comandos"). Uma vez gerado não poderá gerar outro, a não ser que o atual seja apagado ou esteja incompleto.
+
+## E-mails
+
+Sempre que ocorrer um **erro crítico** será enviado um e-mail para o usuário (caso um endereço de e-mail esteja cadastrado) com detalhes sobre o ocorrido. Endereços de e-mails podem ser cadastrados por meio do [prompt de comandos](COMMANDS.md "Guia de comandos") e não são obrigatórios.

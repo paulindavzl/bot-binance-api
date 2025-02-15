@@ -16,3 +16,4 @@ __pycache__/
 .enc
 logs/
 data/
+.venv

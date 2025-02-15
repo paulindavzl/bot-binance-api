@@ -20,13 +20,43 @@ def start_server():
     remove_files()
 
 
+# testa enviar um email sem ter feito a configurção
+def test_send_email_email_not_configured():
+    remove_files() # apaga os arquivos
+
+    response = SendEmail(
+        env=env,
+        to='test@test.com',
+        subject='Testing',
+        content='This is a test'
+    )
+
+    assert not response.status
+    assert response.error == 'email_not_configured'
+
+
 # testa enviar um email
 def test_send_email(start_server):
-    result = SendEmail(env,
+    response = SendEmail(
+        env=env,
         to='test@test.com',
         subject='Testing',
         content='This is a test',
         server='localhost:1025'
     )
 
-    assert result.status
+    assert response.status
+    assert not response.error
+
+
+# testa enviar um email com as credenciais inválidas
+def test_send_email_invalid_credentials():
+    response = SendEmail(
+        env=env,
+        to='test@test.com',
+        subject='Testing',
+        content='This is a test'
+    )
+
+    assert not response.status
+    assert response.error == 'invalid_credentials'

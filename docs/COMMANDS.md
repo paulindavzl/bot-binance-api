@@ -48,10 +48,10 @@ Comandos usados para definir informações do bot (nome, administrador, GitHub d
   ```bash
   --emailpass your_app_password
   ```
-- `--sendemail` envia um email para o destinatário informado, serve para testar se o cadastro foi bem sucessido.
+- `--sendemail` envia um email para um destino específico
 
   ```bash
-  --sendemail your_other_email@example.com
+  --sendemail email_address@example.com
   ```
 - `--debug` altera o modo de operação do bot (não muda nada significamente, mas toda alteração manual dos arquivos será refletida automaticamente ao bot)
 
